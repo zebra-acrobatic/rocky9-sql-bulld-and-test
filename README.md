@@ -8,6 +8,8 @@ Basic setup and testing of SQL server in Rocky 9
 4. A recent Kali Linux VM.
 5. The lab document.
 
+_Note:_ This scenario assums you will install the SQL server on the same Rocky 9 VM as Splunk.
+
 ## Step 1: Prepare a Rock 9 VM
 You will need to install a minimal version of Rocky 9 (If you have an existing VM, go to step 2).
 
@@ -207,4 +209,74 @@ Use your remote connection tool to create and manage a new simulated customer da
 | 4      	| email      	| VARCHAR   	| Email address 	|
 | 5      	| ph         	| VARCHAR   	| Phone Number  	|
 
-sd
+3. Clike on the new table > `Data`, the table should be empty. Right click anywhere in the empty table and click `inster row` to create the following entries (replace `X`, `Y` and `Z` with your information respectively).
+
+| # 	| cust_id 	| first_name 	| last_name  	| email                   	| PH      	|
+|---	|---------	|------------	|------------	|-------------------------	|---------	|
+| 1 	| 101     	| Alice      	| Test       	| alice.test@email.com    	| 9999999 	|
+| 2 	| 102     	| Bob        	| Belcher    	| bob@bobsburgers.com     	| 9999998 	|
+| 3 	| 103     	| Radwardo   	| Glitzgobar 	| radwardo@moonbeampd.com 	| 7777777 	|
+| 4 	| 104     	| X          	| Y          	| Z                       	| 555555  	|
+
+4. Click `Tools` > `User Manager` and `Add` a new user with the following properties:
+   - `User name`: customer_manager
+   - `From host`: %
+   - `Password`: P@ssw0rd1
+   - `Allow access to`: Everything for the customers table (click `+ Add object`)
+
+## Step 7: Check the log files for out put
+The logging facility in the SQL server should have picked up all of the queeries and changes made to the system. Show that it worked by checking for the logs.
+
+1. The log file will be named after the host system with the database on it. Find the hostname of your system:
+```bash
+hostname
+```
+2. Observe the contents of the log file by replacing `rocky9` with your system host name:
+```bash
+sudo cat /var/lib/mysql/rocky9.log
+```
+3. Lastly, you will need to set the permissions on the log file so that the Splunk process can access it in the next step (remember to use the correct name for your file):
+```bash
+sudo chmod o+r /var/lib/mysql/rocky9.log
+```
+## Step 8: Add the logs to Splunk.
+Next, you will add your logs to Splunk for further analysis.
+
+1. Log into your Splunk web interface.
+2. Click `Apps` > `Find More Apps`.
+3. Install the `Splunk Add-on for MySQL` addon to add the SQL server source type support in Splunk.
+4. Click `Settings` > `Data Inputs` > `+ Add new` `Files & Directories` input.
+5. For `File or Directory` press `Browse` and select the log file from the last step in `/var/lib/mysql/`
+6. Press `Next`.
+7. Chouse the `Source type` as `Database` > `mysql:generalQueryLog` and verify that Splunk now understands the lay out of the log file.
+8. Press `Next`.
+9. Create (and set) a new Index called `sql_server` for the data to be imported to.
+10. Press `Next` and finish the add new input process.
+
+## Step 9: Create a Dashboard for Splunk
+
+1. In Splunk, use the search string `index="sql_server"` to find all of the SQL server log events.
+2. Use the search string `index="sql_server" "create user"` to find what time the users were created.
+3. Use the search string `index="sql_server" "INSERT"` to find what time the users were created.
+4. Create a dashboard to track the connect events on the server.
+   - Use the `index="sql_server" Command=Connect` search string to find all of the log in events.
+     - Click on `Pivot` > `Selected fields`
+     - Click the `42` `Single value`
+        - Change the Range to `Today`
+        - Set `Color` to `Yes`
+      - Press `Save As DashBoard Panel` and set the name and model information to `24h connections`
+5. View the new dashboard and keep it up, in the next step you will trigger a live change.
+
+## Step 10: Start a live access attack.
+
+1. Start your Kali Linux VM and log in.
+2. Press the Kali Linux logo at the stop left corner and search for `hydra-graphical` to start `Hydra`
+3. In the **Target** menu, set the `Single Target` IP address to your SQL Server IP, set the port to `3306` and set the `Protocol` to `mysql`.
+4. In the **Password** menu, set the Username to `root` and the `Password list` to `/usr/share/wordlists/rockyou.txt.gz`.
+5. In the **Tuning** menu, set the `Number of tasks` to 1 and the `Timeout` to 2.
+6. In the Start menu, start the attack (it may show many errors during the attack).
+
+## Step 11: Observe the attack occuring in real time
+
+1. Check the dashboard you configured earlier, it should show the number of `connect` commands escelating (refresh if it doesn't auto refresh).
+2. Use the search string `index="sql_server" tag=failure` to see all of the authentication failures occuring in the search app.
