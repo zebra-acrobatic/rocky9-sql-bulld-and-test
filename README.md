@@ -259,7 +259,7 @@ Next, you will add your logs to Splunk for further analysis.
 2. Use the search string `index="sql_server" "create user"` to find what time the users were created.
 3. Use the search string `index="sql_server" "INSERT"` to find what time the users were created.
 4. Create a dashboard to track the connect events on the server.
-   - Use the `index="sql_server" Command=Connect` search string to find all of the log in events.
+   - Use the `index="sql_server" tag=failure` search string to find all failed log in events.
      - Click on `Pivot` > `Selected fields`
      - Click the `42` `Single value`
         - Change the Range to `Today`
