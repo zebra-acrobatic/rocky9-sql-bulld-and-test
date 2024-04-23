@@ -1,5 +1,5 @@
 # Working and logging from an SQL server
-Basic setup and testing of SQL server in Rocky 9
+This is a basic learning tutorial for SQL, Splunk and a simulated attack. It will involve basic setup and testing of SQL server in Rocky 9 and observing Splunk dashboards during a basic penetration tests using Kali Linux.
 
 ## Requirements:
 1. Windows host (presumed Win 11).
