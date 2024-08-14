@@ -42,17 +42,13 @@ mysql -u root
 ```
 6. If it works, use `exit` to quit the SQL shell.
 
-7. Confirm the service is binded to the correct network port for SQL:
+7. Open the required firewall ports to allow the SQL server to communicate with clients.
 ```bash
-ss -tulpna | grep sql
+sudo firewall-cmd --add-port=3306/tcp --perm
 ```
-8. Open the required firewall ports to allow the SQL server to communicate with clients.
-```bash
-firewall-cmd --add-port=3306/tcp --perm
-```
-9. Reload the firewall rules:
+8. Reload the firewall rules:
 ``` bash
-firewall-cmd --reload
+sudo firewall-cmd --reload
 ```
 
 ## Step 3: Configure basic security on the SQL server
@@ -143,7 +139,7 @@ Further documentation is available [here](https://dev.mysql.com/doc/refman/8.3/e
 
 1. Verify what the server logs by default (notice, the logs will be sparse, lacking information.):
 ```bash
-cat /var/log/mysql/mysqld.log
+sudo cat /var/log/mysql/mysqld.log
 ```
 2. Check the logging settings for the SQL server (this will reveal which logs are on/off and where the log files will be):
 ```bash
@@ -152,12 +148,12 @@ mysql -uroot -p -se "SHOW VARIABLES" | grep -e log_error -e general_log -e slow_
 3. Turn on the general log with the following steps:
     - Open the configuration file using any text editor installed (`nano`,`vi` or `vim`), this example will use `vi`:
       ```bash
-      vi /etc/my.cnf.d/mysql-server.cnf
+      sudo vi /etc/my.cnf.d/mysql-server.cnf
       ```
-    - Under the `[mysql]` block, add the line `general_log=1`.
+    - Under the `[mysqld]` block, add the line `general_log=1`.
     - Restart the server:
       ```bash
-      systemctl restart mysqld
+      sudo systemctl restart mysqld
       ```
 4. Check the logging settings for the SQL server have changed:
 ```bash
@@ -193,7 +189,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'yourname'@'%' WITH GRANT OPTION;
  - `Hostname/IP`: Put the IP address of your SQL server
  - `Prompt for credentials`: Tick
  -  Press `Save`
-10. Press `Connect` and enter the new username and password when requested.
+10. Press `Open` and enter the new username and password when requested.
 
 ## Step 6: Create a new database
 Use your remote connection tool to create and manage a new simulated customer database. Pay attention to the bottom section of the HeidiSQL GUI, it will provide the SQL language syntax needed to answer questions in the lab.
