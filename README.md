@@ -275,4 +275,4 @@ Next, you will add your logs to Splunk for further analysis.
 ## Step 11: Observe the attack occuring in real time
 
 1. Check the dashboard you configured earlier, it should show the number of `connect` commands escelating (refresh if it doesn't auto refresh).
-2. Use the search string `index="sql_server" tag=failure` to see all of the authentication failures occuring in the search app.
+2. Use the search string `index="sql_server" action=failure` to see all of the authentication failures occuring in the search app.
